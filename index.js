@@ -64,23 +64,66 @@ app.get("/users/:id", async (req, res) => {
 })
 
 app.post("/users", async (req, res) => {
-  const { name, email, phone, checked_in } = req.body;
+  const { name, email, phone, checked_in, skills } = req.body;
   // type checking
-  if(name == null || email == null || phone == null || checked_in == null){
+  if(name == null || email == null || phone == null || checked_in == null || skills == null){
     res.status(422).json({error: "Missing fields"});
     return;
   }
   try {
-    const query = `INSERT INTO users (name, email, phone, checked_in)
+    await db.run("BEGIN TRANSACTION")
+
+    const userQuery = `INSERT INTO users (name, email, phone, checked_in)
                       VALUES (?,?,?,?)`;
 
-    const result = await db.run(query, [name, email, phone, checked_in]);
-    res.status(201).json({  message : "Successfully created user",
-                            id : result.lastID
-                        });
+    const userResult = await db.run(userQuery, [name, email, phone, checked_in]);
+    const userID = userResult.lastID;
+
+
+    for(const skill of skills){
+      // need skill validation
+      // skill has name, rating
+      let skillID;
+      const existingSkill = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
+
+      // if skill exists
+      if(existingSkill){
+        skillID = existingSkill.id;
+      } else {
+
+        // if skill doesn't exist, create new skill
+        const skillQuery = `INSERT INTO skills (name)
+                            VALUES (?)`;
+        const skillResult = await db.run(skillQuery, [skill.name]);
+        skillID = skillResult.lastID;
+      }
+
+      // insert row for user/skill relationship
+      const associativeQuery = `INSERT INTO users_skills (user_id, skill_id, rating)
+                                VALUES (?,?,?)`;
+
+      await db.run(associativeQuery, [userID, skillID, skill.rating]);
+
+    }
+
+    await db.run("COMMIT");
+    res.status(201).json( {  
+                            message : "Successfully created user",
+                            userID : userID,
+                          }
+    );
+    
+      
   } catch (err){
+    await db.run("ROLLBACK")
     res.status(500).json({error: err.message})
   }
+})
+
+app.put("/users", async (req, res) => {
+
+    // look into reversions/commits in sqlite so that you maintain db integrity in case of error
+
 })
 
 
@@ -108,7 +151,7 @@ app.get("/skills/:id", async (req, res) => {
 })
 
 app.post("/skills", async (req, res) => {
-  const { name, quantity } = req.body;
+  const { name, quantity = 0 } = req.body;
   // type checking
   if(name == null || quantity == null){
     res.status(422).json({error: "Name and quantity fields aren't found"});
