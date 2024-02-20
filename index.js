@@ -21,6 +21,19 @@ app.get("/", (req, res) => {
 app.get("/users", async (req, res) => {
   try {
     const users = await db.all('SELECT * FROM users');
+
+    for(const user of users){
+
+      const query = `SELECT s.name, us.rating
+                      FROM users_skills us
+                      JOIN skills s ON us.skill_id = s.id
+                      WHERE us.user_id = ?`;
+      const skills = await db.all(query, [user.id]);
+      user.skills = skills;
+
+    }
+
+
     res.json(users);
   } catch(err){
     res.status(400).json({error: err.message});
