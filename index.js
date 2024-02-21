@@ -80,36 +80,12 @@ app.post("/users", async (req, res) => {
     const userID = userResult.lastID;
 
 
-    for(const skill of skills){
-      // need skill validation
-      // skill has name, rating
-      let skillID;
-      const existingSkill = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
-
-      // if skill exists
-      if(existingSkill){
-        skillID = existingSkill.id;
-      } else {
-
-        // if skill doesn't exist, create new skill
-        const skillQuery = `INSERT INTO skills (name)
-                            VALUES (?)`;
-        const skillResult = await db.run(skillQuery, [skill.name]);
-        skillID = skillResult.lastID;
-      }
-
-      // insert row for user/skill relationship
-      const associativeQuery = `INSERT INTO users_skills (user_id, skill_id, rating)
-                                VALUES (?,?,?)`;
-
-      await db.run(associativeQuery, [userID, skillID, skill.rating]);
-
-    }
+    await dbFunctions.addUserSkills(db, userID, skills);
 
     await db.run("COMMIT");
     res.status(201).json( {  
                             message : "Successfully created user",
-                            userID : userID,
+                            userID : userID
                           }
     );
     
@@ -126,67 +102,86 @@ app.put("/users/:userID", async (req, res) => {
   const { userUpdates } = req.body;
   const { skillsUpdates } = req.body;
 
-  const filteredBody = Object.keys(userUpdates).reduce((acc, key) => {
+  // check if either fields are present and populated
+  const isUserUpdatesEmpty = userUpdates == null || Object.keys(userUpdates).length === 0;
+  const isSkillsUpdatesEmpty = skillsUpdates == null || Object.keys(skillsUpdates).length === 0;
 
-    if(userUpdates[key] != null){
-      acc[key] = userUpdates[key];
-    }
-
-    return acc;
-  }, {})
-
-  // array of clauses for setting
-  const setClause = Object.keys(filteredBody).map(key => `${key} = ?`).join(', ');
-  // array of values
-  const values = Object.values(filteredBody);
-
-  try {
-    await db.run("BEGIN TRANSACTION");
-
-    // set user general data
-    const userRes = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
-    if(userRes.changes === 0){
-      return res.status(404).json({ error: 'User not found.' });
-    }
-
-    // set user skills
-    const { add : skillsToAdd, remove: skillsToRemove, update: skillsToUpdate } = skillsUpdates;
-    // add skill (CAN MAKE OWN FUNCTION)
-    if(skillsToAdd != null){
-      try{
-        await dbFunctions.addUserSkills(db, userID, skillsToAdd);
-      } catch (err){
-        await db.run("ROLLBACK");
-
-        // error handling
-        if (err.message.includes("UNIQUE constraint failed")) {
-          return res.status(400).json({ error: "Duplicate skill entry." });
-        } else {
-          // Handle other types of errors
-          return res.status(500).json({ error: "Failed to add skill." });
-        }
-      }
-      
-    }
-
-    // remove skill from user
-    if(skillsToRemove != null){
-      await dbFunctions.removeUserSkills(db, userID, skillsToRemove);
-    }
-
-    if(skillsToUpdate != null){
-      await dbFunctions.updateUserSkills(db, userID, skillsToUpdate);
-    }
-    
-    await db.run("COMMIT");
-    res.status(200).json({message : `User ${userID} updated successfully.`});
-
-  } catch (err) {
-    await db.run("ROLLBACK");
-    res.status(500).json({error : `Error updating user: ${err.message}`});
+  if (isUserUpdatesEmpty && isSkillsUpdatesEmpty) {
+    // No meaningful updates provided, return an error response
+    res.status(422).json({ error: "No updates provided or updates are empty." });
     return;
   }
+  await db.run("BEGIN TRANSACTION");
+  // general user info (ex. name, email, phone)
+  if(!isUserUpdatesEmpty){
 
+    const filteredBody = Object.keys(userUpdates).reduce((acc, key) => {
+
+      if(userUpdates[key] != null){
+        acc[key] = userUpdates[key];
+      }
+  
+      return acc;
+    }, {})
+  
+    // array of clauses for setting
+    const setClause = Object.keys(filteredBody).map(key => `${key} = ?`).join(', ');
+    // array of values
+    const values = Object.values(filteredBody);
+  
+    try {
+      // set user general data
+      const userRes = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
+      if(userRes.changes === 0){
+        return res.status(404).json({ error: 'User not found.' });
+      }
+    }catch(err){
+      await db.run("ROLLBACK");
+      res.status(400).json({error: `Error updating user. Something went wrong updating their general details: ${err.message}`});
+    }
+  }
+  
+  // update skills
+  if(!isSkillsUpdatesEmpty){
+    console.log(skillsUpdates);
+    try{
+      const { add : skillsToAdd, remove: skillsToRemove, update: skillsToUpdate } = skillsUpdates;
+      // add skill (CAN MAKE OWN FUNCTION)
+      if(skillsToAdd != null){
+        try{
+          await dbFunctions.addUserSkills(db, userID, skillsToAdd);
+        } catch (err){
+          await db.run("ROLLBACK");
+
+          // error handling
+          if (err.message.includes("UNIQUE constraint failed")) {
+            return res.status(400).json({ error: "Duplicate skill entry." });
+          } else {
+            // Handle other types of errors
+            return res.status(500).json({ error: "Failed to add skill." });
+          }
+        }
+        
+      }
+
+      // remove skill from user
+      if(skillsToRemove != null){
+        await dbFunctions.removeUserSkills(db, userID, skillsToRemove);
+      }
+
+      if(skillsToUpdate != null){
+        await dbFunctions.updateUserSkills(db, userID, skillsToUpdate);
+      }
+      
+      await db.run("COMMIT");
+      res.status(200).json({message : `User ${userID} updated successfully.`});
+
+    } catch (err) {
+      await db.run("ROLLBACK");
+      res.status(500).json({error : `Error updating user. Something went wrong updating the skills: ${err.message}`});
+      return;
+    }
+  }
 })
 
 
@@ -225,6 +220,7 @@ app.post("/skills", async (req, res) => {
                       VALUES (?,?)`;
 
     const result = await db.run(query, [name, quantity]);
+
     res.status(201).json({  message : "Successfully created skill",
                             id : result.lastID
                         });
