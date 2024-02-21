@@ -143,7 +143,6 @@ app.put("/users/:userID", async (req, res) => {
   
   // update skills
   if(!isSkillsUpdatesEmpty){
-    console.log(skillsUpdates);
     try{
       const { add : skillsToAdd, remove: skillsToRemove, update: skillsToUpdate } = skillsUpdates;
       // add skill (CAN MAKE OWN FUNCTION)
