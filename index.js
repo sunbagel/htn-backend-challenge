@@ -24,7 +24,7 @@ app.get("/users", async (req, res) => {
 
     for(const user of users){
 
-      const skills = await dbFunctions.getUserSkills();
+      const skills = await dbFunctions.getUserSkills(user.id);
       user.skills = skills;
 
     }
