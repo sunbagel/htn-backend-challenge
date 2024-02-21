@@ -150,7 +150,7 @@ app.put("/users/:userID", async (req, res) => {
     }
 
     // set user skills
-    const { add : skillsToAdd, update: skillsToUpdate, remove: skillsToRemove } = skillsUpdates;
+    const { add : skillsToAdd, remove: skillsToRemove, update: skillsToUpdate } = skillsUpdates;
     // add skill (CAN MAKE OWN FUNCTION)
     if(skillsToAdd != null){
       for(const skill of skillsToAdd){
@@ -181,12 +181,28 @@ app.put("/users/:userID", async (req, res) => {
     }
 
     // remove skill from user
-    if(skillsToAdd != null){
+    if(skillsToRemove != null){
       for(const skill of skillsToRemove){
         const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
         const skillID = skillRes.id;
-        await db.run("DELETE FROM users_skills WHERE user_id = ? AND skill_id = ?", [userID, skillID]);
+        const query = `DELETE FROM users_skills
+                        WHERE user_id = ? AND skill_id = ?`;
+
+        await db.run(query, [userID, skillID]);
       }
+    }
+
+    if(skillsToUpdate != null){
+
+      for(const skill of skillsToUpdate){
+        const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
+        const skillID = skillRes.id;
+        const query = `UPDATE users_skills 
+                        SET rating = ? WHERE user_id = ? 
+                        AND skill_id = ?`;
+        await db.run(query, [skill.rating, userID, skillID]);
+      }
+
     }
     
 
