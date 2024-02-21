@@ -1,16 +1,22 @@
-
+import sqlite3 from "sqlite3";
+import { open } from "sqlite";
 // Open db connection
 const db = await open({
     filename: './hackers.db',
     driver: sqlite3.Database
-  })
+})
 
-async function getUsers(){
+export async function getUsers(){
     const users = await db.all("SELECT * FROM users");
     return users;
 }
 
-async function getUserSkills(userID){
+export async function getUserByID(userID){
+    const user = await db.get('SELECT * FROM users WHERE id = ?', [id]);
+    return user;
+}
+
+export async function getUserSkills(userID){
     const query = `SELECT s.name, us.rating
                       FROM users_skills us
                       JOIN skills s ON us.skill_id = s.id
@@ -19,7 +25,15 @@ async function getUserSkills(userID){
     return skills;
 }
 
-async function addUserSkills(db, userID, skills){
+export async function createUser(name, email, phone, checked_in){
+    const userQuery = `INSERT INTO users (name, email, phone, checked_in)
+    VALUES (?,?,?,?)`;
+
+    const userResult = await db.run(userQuery, [name, email, phone, checked_in]);
+    return userResult;
+}
+
+export async function addUserSkills(db, userID, skills){
     for(const skill of skills){
         // need skill validation
         // skill has name, rating
@@ -48,7 +62,7 @@ async function addUserSkills(db, userID, skills){
 
 }
 
-async function removeUserSkills(db, userID, skills){
+export async function removeUserSkills(db, userID, skills){
     for(const skill of skills){
         const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
         const skillID = skillRes.id;
@@ -59,7 +73,7 @@ async function removeUserSkills(db, userID, skills){
       }
 }
 
-async function updateUserSkills(db, userID, skills){
+export async function updateUserSkills(db, userID, skills){
     for(const skill of skills){
         const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
         const skillID = skillRes.id;
@@ -70,5 +84,4 @@ async function updateUserSkills(db, userID, skills){
     }
 }
 
-export { getUsers, getUserSkills, addUserSkills, removeUserSkills, updateUserSkills };
 

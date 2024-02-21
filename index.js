@@ -40,14 +40,8 @@ app.get("/users", async (req, res) => {
 app.get("/users/:id", async (req, res) => {
   const id = req.params.id;
   try {
-    const user = await db.get('SELECT * FROM users WHERE id = ?', [id]);
-
-    const query = `SELECT s.name, us.rating
-                    FROM users_skills us
-                    JOIN skills s ON us.skill_id = s.id
-                    WHERE us.user_id = ?`;
-
-    const skills = await db.all(query, [user.id]);
+    const user = await dbFunctions.getUserByID(user.id);
+    const skills = await dbFunctions.getUserSkills(user.id);
     user.skills = skills;
 
     res.json(user);
@@ -67,11 +61,7 @@ app.post("/users", async (req, res) => {
   }
   try {
     await db.run("BEGIN TRANSACTION")
-
-    const userQuery = `INSERT INTO users (name, email, phone, checked_in)
-                      VALUES (?,?,?,?)`;
-
-    const userResult = await db.run(userQuery, [name, email, phone, checked_in]);
+    const userResult = await dbFunctions.createUser(name, email, phone, checked_in);
     const userID = userResult.lastID;
 
 
