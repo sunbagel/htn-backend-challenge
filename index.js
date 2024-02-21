@@ -120,9 +120,37 @@ app.post("/users", async (req, res) => {
   }
 })
 
-app.put("/users", async (req, res) => {
+app.put("/users/:userID", async (req, res) => {
+  
+  const userID = req.params.userID;
+  const body = req.body;
 
-    // look into reversions/commits in sqlite so that you maintain db integrity in case of error
+  const filteredBody = Object.keys(body).reduce((acc, key) => {
+
+    if(body[key] != null){
+      acc[key] = body[key];
+    }
+
+    return acc;
+  }, {})
+
+  // array of clauses for setting
+  const setClause = Object.keys(filteredBody).map(key => `${key} = ?`).join(', ');
+  // array of values
+  const values = Object.values(filteredBody);
+
+  try {
+
+    const response = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
+    if(response.changes === 0){
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    res.status(200).json({message : `User ${userID} updated successfully.`});
+
+  } catch (err) {
+    res.status(500).json({error : err.message});
+  }
 
 })
 
