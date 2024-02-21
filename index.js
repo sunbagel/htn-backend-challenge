@@ -116,7 +116,7 @@ app.put("/users/:userID", async (req, res) => {
   
     try {
       // set user general data
-      const userRes = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
+      const userRes = await dbFunctions.updateUser(values, userID);
       if(userRes.changes === 0){
         return res.status(404).json({ error: 'User not found.' });
       }

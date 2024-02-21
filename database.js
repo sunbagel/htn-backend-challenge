@@ -33,6 +33,10 @@ export async function createUser(name, email, phone, checked_in){
     return userResult;
 }
 
+export async function updateUser(values, userID){
+    const userRes = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
+}
+
 export async function addUserSkills(db, userID, skills){
     for(const skill of skills){
         // need skill validation
