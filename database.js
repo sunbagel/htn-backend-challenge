@@ -12,7 +12,7 @@ export async function getUsers(){
 }
 
 export async function getUserByID(userID){
-    const user = await db.get('SELECT * FROM users WHERE id = ?', [id]);
+    const user = await db.get('SELECT * FROM users WHERE id = ?', [userID]);
     return user;
 }
 
@@ -35,8 +35,13 @@ export async function createUser(name, email, phone, checked_in){
 
 export async function updateUser(values, userID){
     const userRes = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
+    return userRes;
 }
 
+export async function getSkill(skillID){
+    const skill = await db.get('SELECT * FROM skills WHERE id = ?', [skillID]);
+    return skill;
+}
 export async function addUserSkills(db, userID, skills){
     for(const skill of skills){
         // need skill validation
