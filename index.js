@@ -1,14 +1,14 @@
 import express from "express";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-// import * as db from "./database.js";
+import * as dbFunctions from "./database.js";
 
 const port = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json())
 
-// Create a database if none exists
+// Open db connection
 const db = await open({
   filename: './hackers.db',
   driver: sqlite3.Database
@@ -153,71 +153,39 @@ app.put("/users/:userID", async (req, res) => {
     const { add : skillsToAdd, remove: skillsToRemove, update: skillsToUpdate } = skillsUpdates;
     // add skill (CAN MAKE OWN FUNCTION)
     if(skillsToAdd != null){
-      for(const skill of skillsToAdd){
-        // need skill validation
-        // skill has name, rating
-        let skillID;
-        const existingSkill = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
-  
-        // if skill exists
-        if(existingSkill){
-          skillID = existingSkill.id;
+      try{
+        await dbFunctions.addUserSkills(db, userID, skillsToAdd);
+      } catch (err){
+        await db.run("ROLLBACK");
+
+        // error handling
+        if (err.message.includes("UNIQUE constraint failed")) {
+          return res.status(400).json({ error: "Duplicate skill entry." });
         } else {
-  
-          // if skill doesn't exist, create new skill
-          const skillQuery = `INSERT INTO skills (name)
-                              VALUES (?)`;
-          const skillResult = await db.run(skillQuery, [skill.name]);
-          skillID = skillResult.lastID;
+          // Handle other types of errors
+          return res.status(500).json({ error: "Failed to add skill." });
         }
-  
-        // insert row for user/skill relationship
-        const associativeQuery = `INSERT INTO users_skills (user_id, skill_id, rating)
-                                  VALUES (?,?,?)`;
-  
-        await db.run(associativeQuery, [userID, skillID, skill.rating]);
-  
       }
+      
     }
 
     // remove skill from user
     if(skillsToRemove != null){
-      for(const skill of skillsToRemove){
-        const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
-        const skillID = skillRes.id;
-        const query = `DELETE FROM users_skills
-                        WHERE user_id = ? AND skill_id = ?`;
-
-        await db.run(query, [userID, skillID]);
-      }
+      await dbFunctions.removeUserSkills(db, userID, skillsToRemove);
     }
 
     if(skillsToUpdate != null){
-
-      for(const skill of skillsToUpdate){
-        const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
-        const skillID = skillRes.id;
-        const query = `UPDATE users_skills 
-                        SET rating = ? WHERE user_id = ? 
-                        AND skill_id = ?`;
-        await db.run(query, [skill.rating, userID, skillID]);
-      }
-
+      await dbFunctions.updateUserSkills(db, userID, skillsToUpdate);
     }
     
-
-
     await db.run("COMMIT");
     res.status(200).json({message : `User ${userID} updated successfully.`});
 
   } catch (err) {
     await db.run("ROLLBACK");
-    res.status(500).json({error : err.message});
+    res.status(500).json({error : `Error updating user: ${err.message}`});
+    return;
   }
-
-
-
-  
 
 })
 
