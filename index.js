@@ -123,12 +123,13 @@ app.post("/users", async (req, res) => {
 app.put("/users/:userID", async (req, res) => {
   
   const userID = req.params.userID;
-  const body = req.body;
+  const { userUpdates } = req.body;
+  const { skillsUpdates } = req.body;
 
-  const filteredBody = Object.keys(body).reduce((acc, key) => {
+  const filteredBody = Object.keys(userUpdates).reduce((acc, key) => {
 
-    if(body[key] != null){
-      acc[key] = body[key];
+    if(userUpdates[key] != null){
+      acc[key] = userUpdates[key];
     }
 
     return acc;
@@ -140,17 +141,67 @@ app.put("/users/:userID", async (req, res) => {
   const values = Object.values(filteredBody);
 
   try {
+    await db.run("BEGIN TRANSACTION");
 
-    const response = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
-    if(response.changes === 0){
+    // set user general data
+    const userRes = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
+    if(userRes.changes === 0){
       return res.status(404).json({ error: 'User not found.' });
     }
 
+    // set user skills
+    const { add : skillsToAdd, update: skillsToUpdate, remove: skillsToRemove } = skillsUpdates;
+    // add skill (CAN MAKE OWN FUNCTION)
+    if(skillsToAdd != null){
+      for(const skill of skillsToAdd){
+        // need skill validation
+        // skill has name, rating
+        let skillID;
+        const existingSkill = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
+  
+        // if skill exists
+        if(existingSkill){
+          skillID = existingSkill.id;
+        } else {
+  
+          // if skill doesn't exist, create new skill
+          const skillQuery = `INSERT INTO skills (name)
+                              VALUES (?)`;
+          const skillResult = await db.run(skillQuery, [skill.name]);
+          skillID = skillResult.lastID;
+        }
+  
+        // insert row for user/skill relationship
+        const associativeQuery = `INSERT INTO users_skills (user_id, skill_id, rating)
+                                  VALUES (?,?,?)`;
+  
+        await db.run(associativeQuery, [userID, skillID, skill.rating]);
+  
+      }
+    }
+
+    // remove skill from user
+    if(skillsToAdd != null){
+      for(const skill of skillsToRemove){
+        const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
+        const skillID = skillRes.id;
+        await db.run("DELETE FROM users_skills WHERE user_id = ? AND skill_id = ?", [userID, skillID]);
+      }
+    }
+    
+
+
+    await db.run("COMMIT");
     res.status(200).json({message : `User ${userID} updated successfully.`});
 
   } catch (err) {
+    await db.run("ROLLBACK");
     res.status(500).json({error : err.message});
   }
+
+
+
+  
 
 })
 
