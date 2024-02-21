@@ -38,7 +38,7 @@ export async function updateUser(values, userID){
     return userRes;
 }
 
-export async function getSkill(skillID){
+export async function getSkillByID(skillID){
     const skill = await db.get('SELECT * FROM skills WHERE id = ?', [skillID]);
     return skill;
 }

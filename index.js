@@ -202,7 +202,7 @@ app.get("/skills", async (req, res) => {
 app.get("/skills/:id", async (req, res) => {
   const id = req.params.id;
   try {
-    const skill = await db.get('SELECT * FROM skills WHERE id = ?', [id]);
+    const skill = await dbFunctions.getSkillByID(id);
     res.json(skill);
   } catch(err){
     res.status(400).json({error: err.message});
