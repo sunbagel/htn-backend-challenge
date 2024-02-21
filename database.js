@@ -1,11 +1,22 @@
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 
-
+// Open db connection
+const db = await open({
+    filename: './hackers.db',
+    driver: sqlite3.Database
+  })
 
 async function getUsers(){
-    const [rows] = await pool.query("SELECT * FROM users");
-    return rows;
+    const users = await db.all("SELECT * FROM users");
+    return users;
+}
+
+async function getUserSkills(userID){
+    const query = `SELECT s.name, us.rating
+                      FROM users_skills us
+                      JOIN skills s ON us.skill_id = s.id
+                      WHERE us.user_id = ?`;
+    const skills = await db.all(query, [userID]);
+    return skills;
 }
 
 async function addUserSkills(db, userID, skills){
@@ -59,5 +70,5 @@ async function updateUserSkills(db, userID, skills){
     }
 }
 
-export { getUsers, addUserSkills, removeUserSkills, updateUserSkills };
+export { getUsers, getUserSkills, addUserSkills, removeUserSkills, updateUserSkills };
 

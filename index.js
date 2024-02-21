@@ -20,19 +20,14 @@ app.get("/", (req, res) => {
 
 app.get("/users", async (req, res) => {
   try {
-    const users = await db.all('SELECT * FROM users');
+    const users = await dbFunctions.getUsers();
 
     for(const user of users){
 
-      const query = `SELECT s.name, us.rating
-                      FROM users_skills us
-                      JOIN skills s ON us.skill_id = s.id
-                      WHERE us.user_id = ?`;
-      const skills = await db.all(query, [user.id]);
+      const skills = await dbFunctions.getUserSkills();
       user.skills = skills;
 
     }
-
 
     res.json(users);
   } catch(err){
