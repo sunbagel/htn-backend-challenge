@@ -168,6 +168,8 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
     let whereQueries = [];
     let queryValues = [];
 
+    selectQueries.push("er.id AS registration_id")
+
     if(startTime){
         whereQueries.push("e.start_time >= ?");
         queryValues.push(startTime);	
@@ -179,14 +181,24 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
     }
 
     if(eventID){
-        selectQueries.push("u.*");
+        selectQueries.push("u.id as u_id");
+        selectQueries.push("u.name as u_name");
+        selectQueries.push("u.email as u_email");
+        
         whereQueries.push("er.event_id = ?");
         queryValues.push(eventID);
     }
 
     if(userID){
-    //	maybe only want u.id, u.name, u.email
-        selectQueries.push("e.*");
+
+        selectQueries.push("e.id as e_id");
+        selectQueries.push("e.name as e_name");
+        selectQueries.push("e.location as e_location");
+        selectQueries.push("e.start_time as e_start_time");
+        selectQueries.push("e.end_time as e_start_time");
+        selectQueries.push("e.description as e_description");
+        selectQueries.push("e.attendees as e_attendees");
+
         whereQueries.push("er.user_id = ?");
         queryValues.push(userID);
     }
