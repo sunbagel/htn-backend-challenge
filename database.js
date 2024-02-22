@@ -152,6 +152,11 @@ export async function createEvent(insertClause, valuesClause, filteredValues){
 
 }
 
+export async function createEventRegistration(userID, eventID){
+    const query = `INSERT INTO event_registrations (user_id, event_id) VALUES (?,?)`
+    return await db.run(query, [userID, eventID]);
+}
+
 export async function getEventRegistrations(userID, eventID, startTime, endTime){
 
     let selectQueries = [];

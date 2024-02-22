@@ -54,6 +54,31 @@ router.post("/events",
     
 });
 
+router.post("/event_registrations", 
+        body("userID").exists().withMessage("userID is required"),
+        body("eventID").exists().withMessage("eventID is required"),
+        async (req, res) => {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const { userID, eventID } = req.body;
+            try{
+                await dbFunctions.createEventRegistration(userID, eventID);
+                res.status(200).json({message: `User ${userID} registered to event ${eventID}`});
+            } catch(err){
+                 if (err.message.includes("UNIQUE constraint failed")) {
+                    return res.status(400).json({ error: "Duplicate skill entry." });
+                } else {
+                    // Handle other types of errors
+                    return res.status(500).json({ error: `Failed to register user ${userID} to event ${eventID}: ${err.message}` });
+                }
+            }
+
+            
+});
+
 router.get("/event_registrations", 
 
         query('startTime').optional().isISO8601().withMessage('Start date must be a valid ISO 8601 date'),
