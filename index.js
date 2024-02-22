@@ -219,10 +219,8 @@ app.post("/skills", async (req, res) => {
     return;
   }
   try {
-    const query = `INSERT INTO skills (name, frequency)
-                      VALUES (?,?)`;
 
-    const result = await db.run(query, [name, frequency]);
+    const result = await dbFunctions.createSkill(name, frequency);
 
     res.status(201).json({  message : "Successfully created skill",
                             id : result.lastID

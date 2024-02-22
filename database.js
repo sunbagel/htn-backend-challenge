@@ -38,16 +38,6 @@ export async function updateUser(values, userID){
     return userRes;
 }
 
-export async function getSkillByID(skillID){
-    const skill = await db.get('SELECT * FROM skills WHERE id = ?', [skillID]);
-    return skill;
-}
-
-export async function getSkills(whereClause, frequencyValues){
-    const skills = await db.all(`SELECT * FROM skills ${whereClause} ORDER BY frequency DESC`, frequencyValues);
-    return skills;
-}
-
 export async function addUserSkills(db, userID, skills){
     for(const skill of skills){
         // need skill validation
@@ -97,6 +87,24 @@ export async function updateUserSkills(db, userID, skills){
                         AND skill_id = ?`;
         await db.run(query, [skill.rating, userID, skillID]);
     }
+}
+
+export async function getSkillByID(skillID){
+    const skill = await db.get('SELECT * FROM skills WHERE id = ?', [skillID]);
+    return skill;
+}
+
+export async function getSkills(whereClause, frequencyValues){
+    const skills = await db.all(`SELECT * FROM skills ${whereClause} ORDER BY frequency DESC`, frequencyValues);
+    return skills;
+}
+
+export async function createSkill(name, frequency){
+    const query = `INSERT INTO skills (name, frequency)
+                      VALUES (?,?)`;
+
+    const result = await db.run(query, [name, frequency]);
+    return result;
 }
 
 
