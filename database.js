@@ -176,24 +176,23 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
     }
 
     if(eventID){
-        selectQueries.push("e.*");
+        selectQueries.push("u.*");
         whereQueries.push("er.event_id = ?");
-        eventJoins.push("e.id = er.event_id");
+        userJoins.push("u.id = er.user_id");
         queryValues.push(eventID);
+    }
+
+    if(userID){
+    //	maybe only want u.id, u.name, u.email
+        selectQueries.push("e.*");
+        whereQueries.push("er.user_id = ?");
+        eventJoins.push("e.id = er.event_id");
+        queryValues.push(userID);
     }
 
     if(eventID == null && userID == null){
         selectQueries.push("*");
     }
-
-    if(userID){
-    //	maybe only want u.id, u.name, u.email
-        selectQueries.push("u.*");
-        whereQueries.push("er.user_id = ?");
-        userJoins.push("u.id = er.user_id");
-        queryValues.push(userID);
-    }
-
 
     const selectClause = selectQueries.join(",");
     const whereClause = whereQueries.length > 0 ? "WHERE " + whereQueries.join(" AND ") : "";
