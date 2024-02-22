@@ -100,7 +100,37 @@ router.get("/event_registrations",
 
             const { userID, eventID, startTime, endTime } = req.query;
             try{
-                const registrations = await dbFunctions.getEventRegistrations(userID, eventID, startTime, endTime);
+                const rows = await dbFunctions.getEventRegistrations(userID, eventID, startTime, endTime);
+                const registrations = rows.map(row => {
+                    // Assuming 'u' prefix for user columns, and 'e' for event columns
+                    let registration = {};
+                    const user = {};
+                    const event = {};
+
+                    // Split row into registration, user, and event objects
+                    for (const key in row) {
+                        if (key.startsWith('u_')) {
+                            user[key.replace('u_', '')] = row[key];
+                        } else if (key.startsWith('e_')) {
+                            event[key.replace('e_', '')] = row[key];
+                        } else if (key.startsWith('er_')) {
+                            registration[key.replace('er_', '')] = row[key];
+                        }
+                    }
+
+                    // searching eventID returns registered users
+                    if(req.query.eventID != null){
+                        registration.user = user;
+                    }
+
+                    // searching userID returns events registered by the user
+                    if(req.query.userID != null){
+                        registration.event = event;
+                    }
+                    // Structure the data
+                    return registration;
+                });
+
                 res.status(200).json(registrations);
             } catch(err){
                 res.status(500).json({error: `Error fetching event registrations: ${err.message}`})

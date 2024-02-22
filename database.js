@@ -168,7 +168,11 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
     let whereQueries = [];
     let queryValues = [];
 
-    selectQueries.push("er.id AS registration_id")
+    selectQueries.push("er.id AS er_registration_id")
+    if(eventID == null && userID == null){
+        selectQueries.push("er.user_id AS er_user_id");
+        selectQueries.push("er.event_id AS er_event_id");
+    }
 
     if(startTime){
         whereQueries.push("e.start_time >= ?");
@@ -195,7 +199,7 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
         selectQueries.push("e.name as e_name");
         selectQueries.push("e.location as e_location");
         selectQueries.push("e.start_time as e_start_time");
-        selectQueries.push("e.end_time as e_start_time");
+        selectQueries.push("e.end_time as e_end_time");
         selectQueries.push("e.description as e_description");
         selectQueries.push("e.attendees as e_attendees");
 
@@ -203,9 +207,7 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
         queryValues.push(userID);
     }
 
-    if(eventID == null && userID == null){
-        selectQueries.push("er.*");
-    }
+    
 
     const selectClause = selectQueries.join(",");
     const whereClause = whereQueries.length > 0 ? "WHERE " + whereQueries.join(" AND ") : "";
