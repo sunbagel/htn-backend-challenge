@@ -1,18 +1,10 @@
 import express from "express";
-import sqlite3 from "sqlite3";
-import { open } from "sqlite";
 import * as dbFunctions from "./database.js";
 
 const port = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json())
-
-// Open db connection
-const db = await open({
-  filename: './hackers.db',
-  driver: sqlite3.Database
-})
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -40,8 +32,8 @@ app.get("/users", async (req, res) => {
 app.get("/users/:id", async (req, res) => {
   const id = req.params.id;
   try {
-    const user = await dbFunctions.getUserByID(user.id);
-    const skills = await dbFunctions.getUserSkills(user.id);
+    const user = await dbFunctions.getUserByID(id);
+    const skills = await dbFunctions.getUserSkills(id);
     user.skills = skills;
 
     res.json(user);
@@ -60,14 +52,14 @@ app.post("/users", async (req, res) => {
     return;
   }
   try {
-    await db.run("BEGIN TRANSACTION")
+    await dbFunctions.beginTransaction();
     const userResult = await dbFunctions.createUser(name, email, phone, checked_in);
     const userID = userResult.lastID;
 
 
-    await dbFunctions.addUserSkills(db, userID, skills);
+    await dbFunctions.addUserSkills(userID, skills);
 
-    await db.run("COMMIT");
+    await dbFunctions.commitTransaction();
     res.status(201).json( {  
                             message : "Successfully created user",
                             userID : userID
@@ -76,7 +68,7 @@ app.post("/users", async (req, res) => {
     
       
   } catch (err){
-    await db.run("ROLLBACK")
+    await dbFunctions.rollbackTransaction();
     res.status(500).json({error: err.message})
   }
 })
@@ -96,7 +88,7 @@ app.put("/users/:userID", async (req, res) => {
     res.status(422).json({ error: "No updates provided or updates are empty." });
     return;
   }
-  await db.run("BEGIN TRANSACTION");
+  await dbFunctions.beginTransaction();
   // general user info (ex. name, email, phone)
   if(!isUserUpdatesEmpty){
 
@@ -116,27 +108,29 @@ app.put("/users/:userID", async (req, res) => {
   
     try {
       // set user general data
-      const userRes = await dbFunctions.updateUser(values, userID);
+      const userRes = await dbFunctions.updateUser(setClause, values, userID);
       if(userRes.changes === 0){
         return res.status(404).json({ error: 'User not found.' });
       }
     }catch(err){
-      await db.run("ROLLBACK");
+      await dbFunctions.rollbackTransaction();
       res.status(400).json({error: `Error updating user. Something went wrong updating their general details: ${err.message}`});
     }
   }
   
   // update skills
   if(!isSkillsUpdatesEmpty){
-    console.log(skillsUpdates);
+
     try{
       const { add : skillsToAdd, remove: skillsToRemove, update: skillsToUpdate } = skillsUpdates;
-      // add skill (CAN MAKE OWN FUNCTION)
+
       if(skillsToAdd != null){
+
         try{
-          await dbFunctions.addUserSkills(db, userID, skillsToAdd);
+          await dbFunctions.addUserSkills(userID, skillsToAdd);
+
         } catch (err){
-          await db.run("ROLLBACK");
+          await dbFunctions.rollbackTransaction();
 
           // error handling
           if (err.message.includes("UNIQUE constraint failed")) {
@@ -151,18 +145,18 @@ app.put("/users/:userID", async (req, res) => {
 
       // remove skill from user
       if(skillsToRemove != null){
-        await dbFunctions.removeUserSkills(db, userID, skillsToRemove);
+        await dbFunctions.removeUserSkills(userID, skillsToRemove);
       }
 
       if(skillsToUpdate != null){
-        await dbFunctions.updateUserSkills(db, userID, skillsToUpdate);
+        await dbFunctions.updateUserSkills(userID, skillsToUpdate);
       }
       
-      await db.run("COMMIT");
+      await dbFunctions.commitTransaction();
       res.status(200).json({message : `User ${userID} updated successfully.`});
 
     } catch (err) {
-      await db.run("ROLLBACK");
+      await dbFunctions.rollbackTransaction();
       res.status(500).json({error : `Error updating user. Something went wrong updating the skills: ${err.message}`});
       return;
     }

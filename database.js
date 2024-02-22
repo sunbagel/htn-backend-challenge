@@ -6,6 +6,18 @@ const db = await open({
     driver: sqlite3.Database
 })
 
+export async function beginTransaction(){
+    await db.run("BEGIN TRANSACTION");
+}
+
+export async function commitTransaction(){
+    await db.run("COMMIT");
+}
+
+export async function rollbackTransaction(){
+    await db.run("ROLLBACK");
+}
+
 export async function getUsers(){
     const users = await db.all("SELECT * FROM users");
     return users;
@@ -33,12 +45,12 @@ export async function createUser(name, email, phone, checked_in){
     return userResult;
 }
 
-export async function updateUser(values, userID){
+export async function updateUser(setClause, values, userID){
     const userRes = await db.run(`UPDATE users SET ${setClause} WHERE id = ?`, [...values, userID]);
     return userRes;
 }
 
-export async function addUserSkills(db, userID, skills){
+export async function addUserSkills( userID, skills){
     for(const skill of skills){
         // need skill validation
         // skill has name, rating
@@ -67,7 +79,7 @@ export async function addUserSkills(db, userID, skills){
 
 }
 
-export async function removeUserSkills(db, userID, skills){
+export async function removeUserSkills(userID, skills){
     for(const skill of skills){
         const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
         const skillID = skillRes.id;
@@ -78,7 +90,7 @@ export async function removeUserSkills(db, userID, skills){
       }
 }
 
-export async function updateUserSkills(db, userID, skills){
+export async function updateUserSkills(userID, skills){
     for(const skill of skills){
         const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
         const skillID = skillRes.id;
