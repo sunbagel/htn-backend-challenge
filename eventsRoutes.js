@@ -4,6 +4,15 @@ import * as dbFunctions from "./database.js";
 
 const router = express.Router();
 
+router.get("/events", async (req, res) => {
+    try{
+        const events = await dbFunctions.getEvents();
+        res.status(200).json(events)
+    } catch(err){
+        res.status(500).json({error: `Error fetching events: ${err.message}`})
+    }
+})
+
 router.post("/events", 
         // date validation
         body('start_time').isISO8601().withMessage('Start date must be a valid ISO 8601 date'),

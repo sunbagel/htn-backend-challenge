@@ -140,6 +140,11 @@ export async function createSkill(name, frequency){
     return result;
 }
 
+export async function getEvents(){
+    const events = await db.all("SELECT * FROM events");
+    return events;
+}
+
 export async function createEvent(insertClause, valuesClause, filteredValues){
 
 
