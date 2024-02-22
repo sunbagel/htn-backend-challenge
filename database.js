@@ -42,6 +42,12 @@ export async function getSkillByID(skillID){
     const skill = await db.get('SELECT * FROM skills WHERE id = ?', [skillID]);
     return skill;
 }
+
+export async function getSkills(whereClause, frequencyValues){
+    const skills = await db.all(`SELECT * FROM skills ${whereClause} ORDER BY frequency DESC`, frequencyValues);
+    return skills;
+}
+
 export async function addUserSkills(db, userID, skills){
     for(const skill of skills){
         // need skill validation

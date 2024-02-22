@@ -190,7 +190,7 @@ app.get("/skills", async (req, res) => {
   // create WHERE clause if frequency queries are present
   const whereClause = frequencyQueries.length ? `WHERE ${frequencyQueries.join(' AND ')}` : '';
   try {
-    const skills = await db.all(`SELECT * FROM skills ${whereClause} ORDER BY frequency DESC`, frequencyValues);
+    const skills = await dbFunctions.getSkills(whereClause, frequencyValues);
     res.json(skills);
   } catch(err){
     res.status(400).json({error: err.message});
