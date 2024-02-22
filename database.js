@@ -1,10 +1,31 @@
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
+import * as fs from "node:fs/promises";
 // Open db connection
 const db = await open({
     filename: './hackers.db',
     driver: sqlite3.Database
 })
+
+export async function initDB(){
+    const data = await fs.readFile('./HTN_2023_BE_Challenge_Data.json', 'utf8'); // Read the JSON file
+    const users = JSON.parse(data); // Parse the JSON data
+
+    for (const user of users) {
+        const {name, email, phone, checked_in, skills} = user;
+        // create basic info
+        const userRes = await createUser(name, email, phone, checked_in);
+        const userID = userRes.lastID;
+        
+        await addUserSkills(userID, skills);
+
+        // break after 100 users.
+        if(userID == 100){
+            break;
+        }
+    }
+
+}
 
 export async function beginTransaction(){
     await db.run("BEGIN TRANSACTION");
@@ -55,7 +76,7 @@ export async function addUserSkills( userID, skills){
         // need skill validation
         // skill has name, rating
         let skillID;
-        const existingSkill = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
+        const existingSkill = await db.get("SELECT id FROM skills WHERE name = ?", [skill.skill]);
 
         // if skill exists
         if(existingSkill){
@@ -65,7 +86,7 @@ export async function addUserSkills( userID, skills){
             // if skill doesn't exist, create new skill
             const skillQuery = `INSERT INTO skills (name)
                                 VALUES (?)`;
-            const skillResult = await db.run(skillQuery, [skill.name]);
+            const skillResult = await db.run(skillQuery, [skill.skill]);
             skillID = skillResult.lastID;
         }
 
@@ -81,7 +102,7 @@ export async function addUserSkills( userID, skills){
 
 export async function removeUserSkills(userID, skills){
     for(const skill of skills){
-        const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
+        const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.skill]);
         const skillID = skillRes.id;
         const query = `DELETE FROM users_skills
                         WHERE user_id = ? AND skill_id = ?`;
@@ -92,7 +113,7 @@ export async function removeUserSkills(userID, skills){
 
 export async function updateUserSkills(userID, skills){
     for(const skill of skills){
-        const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.name]);
+        const skillRes = await db.get("SELECT id FROM skills WHERE name = ?", [skill.skill]);
         const skillID = skillRes.id;
         const query = `UPDATE users_skills 
                         SET rating = ? WHERE user_id = ? 

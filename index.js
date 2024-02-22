@@ -15,7 +15,17 @@ app.get("/", (req, res) => {
 app.use(usersRoutes);
 app.use(skillsRoutes);
 
-
+app.post("/init_db", async (req, res) =>{
+  try{
+    dbFunctions.beginTransaction();
+    await dbFunctions.initDB();
+    dbFunctions.commitTransaction();
+    res.status(200).json({message: "Success!"})
+  } catch(err){
+    dbFunctions.rollbackTransaction();
+    res.status(500).json({error: `Unable to init db: ${err.message}`});
+  }
+})
 
 app.listen(port, () => {
   console.log(`Example REST Express app listening at http://localhost:${port}`);

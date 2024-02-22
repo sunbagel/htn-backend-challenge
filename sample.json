@@ -1,0 +1,81 @@
+[
+    {
+        "id": 3,
+        "name": "test user 1",
+        "email": "test1@gmail.com",
+        "phone": "000-000-0000",
+        "checked_in": 0,
+        "skills": [
+            {
+                "skill": "Svelte",
+                "rating": 6
+            },
+            {
+                "skill": "C++",
+                "rating": 10
+            },
+            {
+                "skill": "Java",
+                "rating": 1
+            },
+            {
+                "skill": "SQL",
+                "rating": 3
+            }
+        ]
+    },
+    {
+        "id": 4,
+        "name": "test user 2",
+        "email": "bob@gmail.com",
+        "phone": "000-000-0000",
+        "checked_in": 0,
+        "skills": [
+            {
+                "skill": "C++",
+                "rating": 6
+            },
+            {
+                "skill": "SQL",
+                "rating": 9
+            },
+            {
+                "skill": "React",
+                "rating": 9
+            },
+            {
+                "skill": "PHP",
+                "rating": 5
+            },
+            {
+                "skill": "MongoDB",
+                "rating": 9
+            }
+        ]
+    },
+    {
+        "id": 5,
+        "name": "test user 3",
+        "email": "test3@gmail.com",
+        "phone": "000-000-0000",
+        "checked_in": 0,
+        "skills": [
+            {
+                "skill": "C++",
+                "rating": 6
+            },
+            {
+                "skill": "Java",
+                "rating": 6
+            },
+            {
+                "skill": "React",
+                "rating": 6
+            },
+            {
+                "skill": "PHP",
+                "rating": 9
+            }
+        ]
+    }
+]
