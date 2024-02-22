@@ -165,25 +165,22 @@ export async function createEventRegistration(userID, eventID){
 export async function getEventRegistrations(userID, eventID, startTime, endTime){
 
     let selectQueries = [];
-    let eventJoins = [];
-    let userJoins = [];
     let whereQueries = [];
     let queryValues = [];
 
     if(startTime){
-        eventJoins.push("e.start_time = ?");
+        whereQueries.push("e.start_time >= ?");
         queryValues.push(startTime);	
     }
 
     if(endTime){
-        eventJoins.push("e.end_time = ?");
+        whereQueries.push("e.end_time <= ?");
         queryValues.push(endTime);
     }
 
     if(eventID){
         selectQueries.push("u.*");
         whereQueries.push("er.event_id = ?");
-        userJoins.push("u.id = er.user_id");
         queryValues.push(eventID);
     }
 
@@ -191,27 +188,18 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
     //	maybe only want u.id, u.name, u.email
         selectQueries.push("e.*");
         whereQueries.push("er.user_id = ?");
-        eventJoins.push("e.id = er.event_id");
         queryValues.push(userID);
     }
 
     if(eventID == null && userID == null){
-        selectQueries.push("*");
+        selectQueries.push("er.*");
     }
 
     const selectClause = selectQueries.join(",");
     const whereClause = whereQueries.length > 0 ? "WHERE " + whereQueries.join(" AND ") : "";
 
-    let eventClause = "";
-    let userClause = "";
-    if(eventJoins.length > 0){
-        
-        eventClause = "JOIN events e ON " + eventJoins.join(" AND ");
-    }
-
-    if(userJoins.length > 0){
-        userClause = "JOIN users u ON " + userJoins.join(" AND ");
-    }
+    const eventClause = "JOIN events e ON e.id = er.event_id";
+    const userClause = "JOIN users u ON u.id = er.user_id";
 
     const query = `SELECT ${selectClause}
                     FROM event_registrations er
