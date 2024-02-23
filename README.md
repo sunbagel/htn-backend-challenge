@@ -3,7 +3,7 @@
 This is my submission for the Hack the North 2024 backend challenge.
 
 # Setup Instructions:
-I uploaded a hackers.db file to the Git repository. You can also access it [here](https://drive.google.com/drive/folders/1qXLXw-aWHj-75P1KUbMZEdV8jZbkgaj0?usp=sharing).
+I uploaded a hackers.db file to the Git repository. You can also access it on this [Google Drive](https://drive.google.com/drive/folders/1qXLXw-aWHj-75P1KUbMZEdV8jZbkgaj0?usp=sharing).
 
 
 This has the database schema and data already set up (hackers.db). The database contains about 100 users from the provided JSON data, skills, 10 events, and ~40-50 event_registrations. You should be able to run `docker-compose up` and it will start the server for you. If something goes wrong with the .db file, please try redownloading hackers.db from the Google Drive link I put above.
@@ -294,7 +294,7 @@ I had some other ideas for the events, including different types of events (work
 ## Design Choices:
 Here is an ER diagram that I made for this: [Link to ER Diagram](https://lucid.app/lucidchart/ebf217db-e02b-4c2d-98c6-aeffbbc1d574/edit?view_items=nLbcnQ6UUeFP&invitationId=inv_75d04ca2-8507-40eb-91ba-1067c75ffe4e)
 
-I also uploaded it as a PDF to the Google Drive if that's easier.
+I also uploaded it as a PDF to the [Google Drive](https://drive.google.com/drive/folders/1qXLXw-aWHj-75P1KUbMZEdV8jZbkgaj0?usp=sharing) if that's easier.
 
 ### Users, Skills, and Events:
 Since I was working with SQL, I used an associative table to model the many-to-many relationship between users and skills. This allowed me to easily keep track of which skills belonged to a user. I made a similar design choice for the relationship between users and events.
@@ -308,7 +308,7 @@ I created a trigger in my SQL db to increase a skill's quantity if it was added 
 I decided to denormalize the skill's quantity, because it would make it easier for reading. Since it was mentioned that skills are not frequently added/removed, it means that we're typically writing to skills a lot less often than reading from them. Thus, keeping it has a quantity field made more sense to me than counting all the skills each time.
 
 ### Event Types:
-My idea for the different event types was to try and implement something similar to an inheritance model, where an event could be extended with more information through another table (workshops, meals, etc.). Instead of keeping all info in one table, I wanted to normalize the different event types here, because I felt it gave room to add new event types with different data flexibly. This would avoid irrelevant data and null columns (ex. if an event isn't a workshop, it has no need for a speaker field).
+My idea for the different event types was to try and implement something similar to an inheritance model, where an event could be extended with more information through another table (workshops, meals, etc.). Instead of keeping all info in one table, I wanted to normalize the different event types here, because I felt it gave room to add new event types with different data flexibly. This would avoid irrelevant data and null columns (ex. if an event isn't a workshop, it has no need for a speaker field). Unfortunately I didn't get to implement this.
 
 ### Atomicity:
 Using SQLite's rollback features, I ensured that anytime I was making several changes to the database, I would rollback the changes when the transaction is interrupted (e.g. an error).
