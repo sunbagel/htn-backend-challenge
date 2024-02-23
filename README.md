@@ -8,6 +8,8 @@ I uploaded a hackers.db file to the Git repository. You can also access it on th
 
 This has the database schema and data already set up (hackers.db). The database contains about 100 users from the provided JSON data, skills, 10 events, and ~40-50 event_registrations. You should be able to run `docker-compose up` and it will start the server for you. If something goes wrong with the .db file, please try redownloading hackers.db from the Google Drive link I put above.
 
+If you'd like to add more of your own data through a JSON file, you can use a POST /init_db endpoint I created. Edit the corresponding JSON filenames as needed in ./database.js. 
+
 # Design:
 
 ## Tech Stack:
