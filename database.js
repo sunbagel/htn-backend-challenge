@@ -3,13 +3,16 @@ import { open } from "sqlite";
 import * as fs from "node:fs/promises";
 // Open db connection
 const db = await open({
-    filename: './hackers.db',
+    filename: './dbTemplate - Copy.db',
     driver: sqlite3.Database
 })
 
 export async function initDB(){
-    const data = await fs.readFile('./HTN_2023_BE_Challenge_Data.json', 'utf8'); // Read the JSON file
-    const users = JSON.parse(data); // Parse the JSON data
+    const userData = await fs.readFile('./HTN_2023_BE_Challenge_Data.json', 'utf8'); // Read the JSON file
+    const users = JSON.parse(userData); // Parse the JSON data
+
+    const eventData = await fs.readFile('./event_data.json');
+    const events = JSON.parse(eventData);
 
     for (const user of users) {
         const {name, email, phone, checked_in, skills} = user;
@@ -23,6 +26,12 @@ export async function initDB(){
         if(userID == 100){
             break;
         }
+    }
+
+    for(const event of events){
+        const {name, location, start_time, end_time, description} = event;
+
+        const eventRes = await createEvent("name, location, start_time, end_time, description", "?,?,?,?,?", [name, location, start_time, end_time, description]);
     }
 
 }
