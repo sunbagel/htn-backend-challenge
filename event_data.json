@@ -1,0 +1,72 @@
+[
+    {
+        "name": "Breakfast",
+        "location": "3rd Floor E7",
+        "start_time": "2024-02-22 06:00:00",
+        "end_time": "2024-02-22 10:00:00",
+        "description": "Pancakes!"
+    },
+    {
+        "name": "C++ Workshop from Brad Lushman",
+        "location": "Room 1",
+        "start_time": "2024-02-22 09:00:00",
+        "end_time": "2024-02-22 11:30:00",
+        "description": "Brad Lushman will be providing a workshop on software development in C++."
+    },
+    {
+        "name": "Lunch Break",
+        "location": "Main Cafeteria",
+        "start_time": "2024-02-22 12:00:00",
+        "end_time": "2024-02-22 13:30:00",
+        "description": "Enjoy a variety of local and international cuisines."
+    },
+    {
+        "name": "JavaScript Essentials",
+        "location": "Room 2B",
+        "start_time": "2024-02-22 14:00:00",
+        "end_time": "2024-02-22 16:00:00",
+        "description": "Dive into the basics of JavaScript with interactive examples."
+    },
+    {
+        "name": "Networking Event",
+        "location": "Conference Hall A",
+        "start_time": "2024-02-22 16:30:00",
+        "end_time": "2024-02-22 18:00:00",
+        "description": "Meet professionals and enthusiasts from the tech industry."
+    },
+    {
+        "name": "Python for Data Science",
+        "location": "Room 3C",
+        "start_time": "2024-02-22 09:30:00",
+        "end_time": "2024-02-22 12:00:00",
+        "description": "An introduction to using Python in the field of data science."
+    },
+    {
+        "name": "AI Ethics Panel",
+        "location": "2nd Floor Auditorium",
+        "start_time": "2024-02-22 13:00:00",
+        "end_time": "2024-02-22 14:30:00",
+        "description": "A panel discussion on the ethical implications of AI advancements."
+    },
+    {
+        "name": "UX Design Workshop",
+        "location": "Design Lab",
+        "start_time": "2024-02-22 15:00:00",
+        "end_time": "2024-02-22 17:00:00",
+        "description": "Learn the fundamentals of user experience design."
+    },
+    {
+        "name": "Evening Yoga",
+        "location": "Rooftop Terrace",
+        "start_time": "2024-02-22 17:30:00",
+        "end_time": "2024-02-22 18:30:00",
+        "description": "Wind down with a relaxing yoga session overlooking the city."
+    },
+    {
+        "name": "Dinner and Networking",
+        "location": "Hotel Grand Ballroom",
+        "start_time": "2024-02-22 19:00:00",
+        "end_time": "2024-02-22 21:00:00",
+        "description": "Conclude the day with dinner and an opportunity to network."
+    }
+]

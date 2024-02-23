@@ -131,7 +131,7 @@ router.put("/users/:userID", async (req, res) => {
             return res.status(400).json({ error: "Duplicate skill entry." });
           } else {
             // Handle other types of errors
-            return res.status(500).json({ error: "Failed to add skill." });
+            return res.status(500).json({ error: `Failed to add skill. ${err.message}` });
           }
         }
         

@@ -2,6 +2,7 @@ import express from "express";
 import * as dbFunctions from "./database.js";
 import usersRoutes from './usersRoutes.js'
 import skillsRoutes from './skillsRoutes.js'
+import eventsRoutes from "./eventsRoutes.js"
 
 const port = process.env.PORT || 3000;
 
@@ -14,6 +15,7 @@ app.get("/", (req, res) => {
 
 app.use(usersRoutes);
 app.use(skillsRoutes);
+app.use(eventsRoutes);
 
 app.post("/init_db", async (req, res) =>{
   try{
