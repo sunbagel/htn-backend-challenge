@@ -3,7 +3,7 @@ import { open } from "sqlite";
 import * as fs from "node:fs/promises";
 // Open db connection
 const db = await open({
-    filename: './dbTemplate - Copy.db',
+    filename: './hackers.db',
     driver: sqlite3.Database
 })
 
