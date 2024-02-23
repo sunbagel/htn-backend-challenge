@@ -6,14 +6,17 @@ This is my submission for the Hack the North 2024 backend challenge.
 I uploaded a hackers.db file to the Git repository. You can also access it [here](https://drive.google.com/drive/folders/1qXLXw-aWHj-75P1KUbMZEdV8jZbkgaj0?usp=sharing).
 
 
-This has the database schema and data already set up (hackers.db). You should be able to run `docker-compose up` and it will start the server for you. If something goes wrong with the .db file, please try redownloading hackers.db from the Google Drive link I put above.
+This has the database schema and data already set up (hackers.db). The database contains about 100 users from the provided JSON data, skills, 10 events, and ~40-50 event_registrations. You should be able to run `docker-compose up` and it will start the server for you. If something goes wrong with the .db file, please try redownloading hackers.db from the Google Drive link I put above.
 
 # Design:
+
+## Tech Stack:
+I used Javascript (Node and Express) and SQLite for this challenge.
 
 ## Endpoints I implemented:
 
 ### Users:
-I created an endpoint that returned user information, both general fields and also the user's skills:
+I created an endpoint that returned user information. It returns both general fields and also the user's skills:
 ```
 GET /users/1
 Returns:
@@ -101,6 +104,7 @@ body JSON:
     "name" : "BongoDB"
 }
 ```
+Note that you can't create the same skill twice (name is unique). You also aren't allowed to put the same skill twice when creating a user. Similarly to the PUT endpoint, skills that don't already exist will be added.
 
 ### Skills:
 I created an endpoint used to get skills. You can filter them by quantity using the query:
@@ -138,7 +142,7 @@ returns:
 The user table has a checked_in field that can be used to know if the user has been checked into Hack the North.
 
 ### Events:
-I have an event table! The idea behind this is to let users be able to register for different events. 
+I have an event table! The idea behind this is to let users be able to register for different events (ex. similar to the QR code scanning). 
 
 An event looks like this:
 ```
@@ -155,6 +159,16 @@ An event looks like this:
 ```
 
 There is important info like locations, start/end times, description, and the number of attendees, which changes dynamically based on people registering/unregistering. You can get a list of all events by running `GET /events`.
+
+To register a user, make a POST request to the /event_registrations endpoint. This endpoint is meant to handle event registration for users. You can't register for the same event twice.
+```
+POST /event_registrations
+JSON Body:
+{
+    "userID" : 2,
+    "eventID" : 2
+}
+```
 
 To get information about events, you can query the event_registrations endpoint. It is very flexible in its filtering. For example:
 
@@ -300,7 +314,7 @@ My idea for the different event types was to try and implement something similar
 Using SQLite's rollback features, I ensured that anytime I was making several changes to the database, I would rollback the changes when the transaction is interrupted (e.g. an error).
 
 ### Error handling:
-I wrapped all of my asynchronous transactions with try/catch blocks to handle errors.
+I wrapped all of my asynchronous transactions with try/catch blocks to handle errors. I also made important fields/identifiers UNIQUE or PRIMARY KEYS to prevent duplicates (ex. more than one user with same email, skill with same name, registration with same event and user, etc.)
 
 ## Improvements
 If I had more time, I would have tried to improve my data validation. I used express-validator to validate the dates, as well as some other data, but didn't use it more extensively to validate other data. I would also want to improve my error handling and provide more detailed error messages. I'd also like to implement the ideas I had for the events tables.
