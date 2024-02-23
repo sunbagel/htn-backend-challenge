@@ -163,7 +163,6 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
     let whereQueries = [];
     let queryValues = [];
 
-    selectQueries.push("er.id AS er_registration_id")
     if(eventID == null && userID == null){
         selectQueries.push("er.user_id AS er_user_id");
         selectQueries.push("er.event_id AS er_event_id");
