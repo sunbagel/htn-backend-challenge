@@ -1,8 +1,8 @@
 import express from "express";
 import * as dbFunctions from "./database.js";
-import usersRoutes from './usersRoutes.js'
-import skillsRoutes from './skillsRoutes.js'
-import eventsRoutes from "./eventsRoutes.js"
+import usersRoutes from './routes/usersRoutes.js'
+import skillsRoutes from './routes/skillsRoutes.js'
+import eventsRoutes from "./routes/eventsRoutes.js"
 
 const port = process.env.PORT || 3000;
 

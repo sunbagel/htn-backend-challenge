@@ -8,13 +8,13 @@ const db = await open({
 })
 
 export async function initDB(){
-    const userData = await fs.readFile('./HTN_2023_BE_Challenge_Data.json', 'utf8');
+    const userData = await fs.readFile('./setup_data/HTN_2023_BE_Challenge_Data.json', 'utf8');
     const users = JSON.parse(userData); // Parse the JSON data
 
-    const eventData = await fs.readFile('./event_data.json');
+    const eventData = await fs.readFile('./setup_data/event_data.json');
     const events = JSON.parse(eventData);
 
-    const registrationData = await fs.readFile('./event_registration_data.json');
+    const registrationData = await fs.readFile('./setup_data/event_registration_data.json');
     const registrations = JSON.parse(registrationData);
     for (const user of users) {
         const {name, email, phone, checked_in, skills} = user;
@@ -39,7 +39,7 @@ export async function initDB(){
 
     for(const registration of registrations){
         const {userID, eventID} = registration;
-        console.log(registration);
+        // console.log(registration);
         await createEventRegistration(userID, eventID);
     }
 
@@ -165,7 +165,7 @@ export async function getEvents(){
 
 export async function createEvent(insertClause, valuesClause, filteredValues){
     const query = `INSERT INTO events (${insertClause}) VALUES (${valuesClause})`;
-    console.log(query);
+    // console.log(query);
     const event = await db.run(query, filteredValues);
     return event;
 }
@@ -233,8 +233,8 @@ export async function getEventRegistrations(userID, eventID, startTime, endTime)
                     ${userClause}
                     ${whereClause}`;
 
-    console.log(query);
-    console.log(queryValues);
+    // console.log(query);
+    // console.log(queryValues);
 
     const eventRegistrations = db.all(query, queryValues);
     return eventRegistrations;

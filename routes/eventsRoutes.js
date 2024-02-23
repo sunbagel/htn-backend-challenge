@@ -1,6 +1,6 @@
 import express from 'express';
 import {body, query, validationResult} from 'express-validator';
-import * as dbFunctions from "./database.js";
+import * as dbFunctions from "../database.js";
 
 const router = express.Router();
 
