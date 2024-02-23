@@ -15,8 +15,8 @@ router.get("/events", async (req, res) => {
 
 router.post("/events", 
         // date validation
-        body('start_time').isISO8601().withMessage('Start date must be a valid ISO 8601 date'),
-        body('end_time').isISO8601().withMessage('End date must be a valid ISO 8601 date'),
+        body('startTime').isISO8601().withMessage('Start date must be a valid ISO 8601 date'),
+        body('endTime').isISO8601().withMessage('End date must be a valid ISO 8601 date'),
 
         async (req, res) => {
             // Check for validation errors
@@ -29,7 +29,7 @@ router.post("/events",
                 return res.status(422).json({error: "Unable to create event. Name was not provided"});
             }
 
-            const validFields = ["name", "location", "start_time", "end_time", "description", "attendees"];
+            const validFields = ["name", "location", "startTime", "endTime", "description", "attendees"];
             const bodyKeys = Object.keys(req.body);
             console.log(bodyKeys);
 
@@ -37,7 +37,8 @@ router.post("/events",
             const filteredValues = [];
             for(const field of bodyKeys){
                 if(validFields.includes(field)){
-                    filteredFields.push(field);
+                    // convert any camelCase values to snake_case
+                    filteredFields.push(field.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`));
                     filteredValues.push(req.body[field]);
                 }
 
