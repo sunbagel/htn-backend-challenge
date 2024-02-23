@@ -8,12 +8,14 @@ const db = await open({
 })
 
 export async function initDB(){
-    const userData = await fs.readFile('./HTN_2023_BE_Challenge_Data.json', 'utf8'); // Read the JSON file
+    const userData = await fs.readFile('./HTN_2023_BE_Challenge_Data.json', 'utf8');
     const users = JSON.parse(userData); // Parse the JSON data
 
     const eventData = await fs.readFile('./event_data.json');
     const events = JSON.parse(eventData);
 
+    const registrationData = await fs.readFile('./event_registration_data.json');
+    const registrations = JSON.parse(registrationData);
     for (const user of users) {
         const {name, email, phone, checked_in, skills} = user;
         // create basic info
@@ -31,7 +33,14 @@ export async function initDB(){
     for(const event of events){
         const {name, location, start_time, end_time, description} = event;
 
-        const eventRes = await createEvent("name, location, start_time, end_time, description", "?,?,?,?,?", [name, location, start_time, end_time, description]);
+        const selectClause = "name, location, start_time, end_time, description";
+        await createEvent(selectClause, "?,?,?,?,?", [name, location, start_time, end_time, description]);
+    }
+
+    for(const registration of registrations){
+        const {userID, eventID} = registration;
+        console.log(registration);
+        await createEventRegistration(userID, eventID);
     }
 
 }
