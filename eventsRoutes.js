@@ -79,7 +79,7 @@ router.post("/event_registrations",
                 res.status(200).json({message: `User ${userID} registered to event ${eventID}`});
             } catch(err){
                  if (err.message.includes("UNIQUE constraint failed")) {
-                    return res.status(400).json({ error: "Duplicate skill entry." });
+                    return res.status(400).json({ error: `User ${userID} has already registered for event ${eventID}` });
                 } else {
                     // Handle other types of errors
                     return res.status(500).json({ error: `Failed to register user ${userID} to event ${eventID}: ${err.message}` });
