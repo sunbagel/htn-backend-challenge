@@ -3,7 +3,7 @@ import { open } from "sqlite";
 import * as fs from "node:fs/promises";
 // Open db connection
 const db = await open({
-    filename: './dbTemplate - Copy.db',
+    filename: './hackers.db',
     driver: sqlite3.Database
 })
 
@@ -17,7 +17,7 @@ export async function initDB(){
     const registrationData = await fs.readFile('./setup_data/event_registration_data.json');
     const registrations = JSON.parse(registrationData);
     for (const user of users) {
-        const {name, email, phone, checked_in, skills} = user;
+        const {name, email, phone, checked_in = 0, skills} = user;
         // create basic info
         const userRes = await createUser(name, email, phone, checked_in);
         const userID = userRes.lastID;
